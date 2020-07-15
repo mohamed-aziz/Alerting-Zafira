@@ -94,35 +94,6 @@ public class Main {
         }
 
 
-        Runnable searchRunnable = new Runnable() {
-            @Override
-            public void run() {
-                List<FileBeatDocument> myresult = (List<FileBeatDocument>) myquery2.search(
-                        QueryBuilders.boolQuery()
-                                .must(QueryBuilders.rangeQuery("@timestamp").from(new DateTime().minusSeconds(60)).to(new DateTime()))
-                                .must(QueryBuilders.boolQuery().should(matchQuery("event.dataset", "apache.access"))
-                                        .should(matchQuery("event.dataset", "nginx.access")))
-
-                );
-            }
-        };
-
-        Runnable searchRunnable2 = new Runnable() {
-            @Override
-            public void run() {
-                List<AuditBeatDocument> myresult = (List<AuditBeatDocument>) myquery1.search(
-                        QueryBuilders.boolQuery()
-                                .must(QueryBuilders.rangeQuery("@timestamp").from(new DateTime().minusSeconds(60)).to(new DateTime()))
-                                .must(matchQuery("event.dataset", "login"))
-                                .must(matchQuery("event.outcome", "success"))
-                );
-            }
-        };
-
-
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
-        // executor.scheduleAtFixedRate(searchRunnable, 0, 1, TimeUnit.SECONDS);
-        executor.scheduleAtFixedRate(searchRunnable2, 0, 1, TimeUnit.SECONDS);
 
 
         System.out.println("end");

@@ -40,53 +40,49 @@ public class Main {
         sourceBuilder.size(5);
         sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
 
-        Index myindex1 = new Index(
+        Index auditbeat_index = new Index(
                 // "filebeat-*",
                 "auditbeat-*"
         );
 
-        ConfigProps myprops1 = new ConfigProps();
-        myprops1.setIndex(myindex1);
+        ConfigProps auditbeat_props = new ConfigProps();
+        auditbeat_props.setIndex(auditbeat_index);
 
 
-        Index myindex2 = new Index(
+        Index filebeat_index = new Index(
                 // "filebeat-*",
                 "filebeat-*"
         );
 
-        ConfigProps myprops2 = new ConfigProps();
-        myprops2.setIndex(myindex2);
+        ConfigProps filebeat_props = new ConfigProps();
+        filebeat_props.setIndex(filebeat_index);
 
 
-        QueryDAO mydao1 =  new QueryDAO(
+        QueryDAO auditbeat_dao =  new QueryDAO(
                 myclient,
                 sourceBuilder,
-                myprops1,
-                new Gson()
-        );
+                auditbeat_props,
+                new Gson());
+        Query auditbeat_query = new Query(auditbeat_dao);
 
-        Query myquery1 = new Query(mydao1);
 
-        QueryDAO mydao2 =  new QueryDAO(
+        QueryDAO filebeat_dao =  new QueryDAO(
                 myclient,
                 sourceBuilder,
-                myprops2,
-                new Gson()
-        );
+                filebeat_props,
+                new Gson());
 
-        Query myquery2 = new Query(mydao2);
+        Query filebeat_query = new Query(filebeat_dao);
 
 
         // BOT stuff
-
-
         ApiContextInitializer.init();
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
 
             UpdateSecurityHandler sec_handler =  new UpdateSecurityHandler();
-            myquery1.events.subscribe("search", sec_handler);
-            myquery2.events.subscribe("search", sec_handler);
+            auditbeat_query.events.subscribe("search", sec_handler);
+            filebeat_query.events.subscribe("search", sec_handler);
             telegramBotsApi.registerBot(sec_handler);
 
         }catch (TelegramApiException e) {

@@ -4,18 +4,13 @@ import com.google.gson.Gson;
 import entity.Document;
 import entity.auditbeat.AuditBeatDocument;
 import entity.filebeat.FileBeatDocument;
-//import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.AbstractQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -23,12 +18,11 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import props.ConfigProps;
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-// @Slf4j
+@Slf4j
 public class QueryDAO {
 
     private final RestHighLevelClient client;
@@ -72,12 +66,11 @@ public class QueryDAO {
     public List<? extends Document> matchAllQuery() {
 
         List<? extends Document> result = new ArrayList<Document>();
-
         try {
             refreshRequest();
             result = getDocuments(QueryBuilders.matchAllQuery());
         } catch (Exception ex){
-            // log.error("The exception was thrown in matchAllQuery method.", ex);
+            log.error("The exception was thrown in matchAllQuery method.", ex);
         }
 
         return result;
@@ -96,7 +89,7 @@ public class QueryDAO {
             result = getDocuments(QueryBuilders.queryStringQuery("*" + query.toLowerCase() + "*"));
         } catch (Exception ex){
             System.out.println(ex);
-            // log.error("The exception was thrown in wildcardQuery method.", ex);
+            log.error("The exception was thrown in wildcardQuery method.", ex);
         }
 
         return result;
@@ -111,7 +104,7 @@ public class QueryDAO {
             result = getDocuments(query);
         } catch (Exception ex){
             System.out.println(ex);
-            // log.error("The exception was thrown in wildcardQuery method.", ex);
+            log.error("The exception was thrown in wildcardQuery method.", ex);
         }
 
         return result;
@@ -126,7 +119,7 @@ public class QueryDAO {
             final DeleteRequest deleteRequest = new DeleteRequest(props.getIndex().getName(), id);
             client.delete(deleteRequest, RequestOptions.DEFAULT);
         } catch (Exception ex){
-            // log.error("The exception was thrown in deleteDocument method.", ex);
+            log.error("The exception was thrown in deleteDocument method.", ex);
         }
     }
 
@@ -155,7 +148,6 @@ public class QueryDAO {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         System.out.println(searchResponse);
         SearchHits hits = searchResponse.getHits();
-        System.out.println(hits);
         SearchHit[] searchHits = hits.getHits();
         for (SearchHit hit : searchHits) {
             if (this.props.getIndex().getName() == "auditbeat-*") {
@@ -167,7 +159,6 @@ public class QueryDAO {
                 FileBeatDocument doc = gson.fromJson(hit.getSourceAsString(), FileBeatDocument.class);
                 doc.setId(hit.getId());
                 result.add(doc);
-
             }
         }
 

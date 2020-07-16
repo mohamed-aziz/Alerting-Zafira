@@ -11,7 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FileBeatDocument extends Document {
-    private String id;
     private String title;
     private String subject;
     private String content;

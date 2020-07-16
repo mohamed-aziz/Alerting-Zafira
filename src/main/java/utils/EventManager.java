@@ -27,10 +27,10 @@ public class EventManager {
         users.remove(listener);
     }
 
-    public void notify(String eventType, List<? extends Document> docs) {
+    public void notify(String eventType, List<? extends Document> docs, String template,HashMap<String, Object> context) {
         List<EventListener> users = listeners.get(eventType);
         for (EventListener listener : users) {
-            listener.update(eventType, docs);
+            listener.update(eventType, docs, template, context);
         }
     }
 }

@@ -11,11 +11,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AuditBeatDocument extends Document {
-    private String id;
     private Agent agent;
     private Event event;
     private Host host;
     private User user;
     private String message;
     private Source source;
+    private Process process;
 }

@@ -1,9 +1,9 @@
 import dao.QueryDAO;
 import entity.Document;
 import org.elasticsearch.index.query.AbstractQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import utils.EventManager;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class Query {
@@ -15,9 +15,9 @@ public class Query {
         this.events = new EventManager("search");
     }
 
-    List<? extends Document> search(AbstractQueryBuilder query) {
+    List<? extends Document> search(AbstractQueryBuilder query, String template,HashMap<String, Object> context) {
         List<? extends Document> result = _dao.executeQuery(query);
-        this.events.notify("search", result);
+        this.events.notify("search", result, template, context);
         return result;
     }
 }

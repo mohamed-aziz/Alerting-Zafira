@@ -1,8 +1,12 @@
 package updatehandlers;
 
+import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.loader.StringLoader;
+import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import entity.Document;
-import entity.auditbeat.AuditBeatDocument;
 import entity.filebeat.FileBeatDocument;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -12,14 +16,14 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import props.BotConfig;
 import utils.EventListener;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-
+@Slf4j
 public class UpdateSecurityHandler extends TelegramLongPollingBot implements EventListener {
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -30,6 +34,7 @@ public class UpdateSecurityHandler extends TelegramLongPollingBot implements Eve
 
     Set<String> seen = new HashSet<String>();
 
+    PebbleEngine engine;
 
     public UpdateSecurityHandler() {
         super();
@@ -43,6 +48,7 @@ public class UpdateSecurityHandler extends TelegramLongPollingBot implements Eve
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+        this.engine = new PebbleEngine.Builder().loader(new StringLoader()).build();
 
     }
 
@@ -69,63 +75,55 @@ public class UpdateSecurityHandler extends TelegramLongPollingBot implements Eve
     }
 
     private static SendMessage getHelpMessage(Message message) {
-        System.out.println("hello ***REMOVED***");
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         sendMessage.enableMarkdown(true);
-        sendMessage.setText("hello ***REMOVED*** " + message.getChatId());
+        sendMessage.setText("Hello 🤟 Give this number to your admin: " + message.getChatId());
         return sendMessage;
     }
 
     @Override
-    public void update(String eventType, List<? extends Document> docs) {
-        System.out.println("okay notification here");
+    public void update(String eventType, List<? extends Document> docs, String template, HashMap<String, Object> context) {
         String idtoAdd = null;
         lock.lock();
         try {
             // critical section
             for (String chatId: array) {
                 for (Document doc: docs) {
-                    if (doc instanceof FileBeatDocument) {
-                        if (!seen.contains(((FileBeatDocument) doc).getId())) {
-                            idtoAdd = ((FileBeatDocument) doc).getId();
-                            System.out.println("hooray");
-                            System.out.println(doc);
-                            String user_agent = ((FileBeatDocument) doc).getUser_agent().getOriginal();
-                            String url_original = ((FileBeatDocument) doc).getUrl().getOriginal();
-                            SendMessage sendmessage = new SendMessage();
-                            sendmessage.setChatId(chatId);
-                            sendmessage.setText(url_original + "🙄" + user_agent + "🤷‍♂️" + ((FileBeatDocument) doc).getSource().getIp());
-                            try {
-                                execute(sendmessage);
-                            } catch (TelegramApiRequestException e) {
-
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
+                    if (!seen.contains(doc.getId())) {
+                        idtoAdd = doc.getId();
+                        HashMap<String, Object> templateContext =  new HashMap<>();
+                        try {
+                            for (Map.Entry<String, Object> entry: context.entrySet()) {
+                                templateContext.put(entry.getKey(), PropertyUtils.getProperty(doc, entry.getValue().toString()));
                             }
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchMethodException e) {
+                            e.printStackTrace();
+                        }
+                        Writer writer = new StringWriter();
+                        PebbleTemplate compiledTemplate = engine.getTemplate(template);
+                        try {
+                            compiledTemplate.evaluate(writer, templateContext);
+                        } catch (IOException e) {
+                            log.error("Couldn't evaluate templalte ", template, e);
                         }
 
-                    } else if (doc instanceof AuditBeatDocument) {
-                        if (!seen.contains( ((AuditBeatDocument) doc).getId())) {
-                            idtoAdd = ((AuditBeatDocument) doc).getId();
-                            System.out.println("hooray audit");
-                            System.out.println(((AuditBeatDocument) doc).getId());
-                            System.out.println(doc);
-                            String message = ((AuditBeatDocument) doc).getMessage();
-                            SendMessage sendmessage = new SendMessage();
-                            sendmessage.setChatId(chatId);
-                            String Out = "Alert ❗❗ \nLogin on " + ((AuditBeatDocument) doc).getHost().getName() + "\nFrom " + ((AuditBeatDocument) doc).getSource().getIp() + " with user 🤦‍♂️: " + ((AuditBeatDocument) doc).getUser().getName();
-                            sendmessage.setText(Out);
-                            try {
-                                execute(sendmessage);
-                            } catch (TelegramApiRequestException e) {
+                        SendMessage sendmessage = new SendMessage();
+                        sendmessage.setChatId(chatId);
+                        sendmessage.setText(writer.toString());
+                        try {
+                            execute(sendmessage);
+                        } catch (TelegramApiRequestException e) {
 
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
                         }
-
                     }
+
                 }
             }
             if (idtoAdd != null) {

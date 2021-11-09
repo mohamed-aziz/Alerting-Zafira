@@ -28,8 +28,8 @@ public class UpdateSecurityHandler extends TelegramLongPollingBot implements Eve
     private final ReentrantLock lock = new ReentrantLock();
 
     String[] array = {
-            "***REMOVED***", // ***REMOVED***
-            "***REMOVED***" // ***REMOVED***
+            "**REMOVED**", // **REMOVED**
+            "**REMOVED**" // **REMOVED**
     };
 
     Set<String> seen = new HashSet<String>();
@@ -39,7 +39,7 @@ public class UpdateSecurityHandler extends TelegramLongPollingBot implements Eve
     public UpdateSecurityHandler() {
         super();
         SendMessage sendmessage = new SendMessage();
-        sendmessage.setChatId("***REMOVED***");
+        sendmessage.setChatId("1104257862");
         sendmessage.setText("hello");
         try {
             execute(sendmessage);

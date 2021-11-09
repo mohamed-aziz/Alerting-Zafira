@@ -44,7 +44,7 @@ public class Main {
 
         RestHighLevelClient myclient = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("***REMOVED***",
+                        new HttpHost("**REMOVED**",
                         9200,
                         "http")));
 

@@ -11,7 +11,7 @@ class SuccessfulSSHLogin implements utils.IScriptAuditbeat {
             .must(QueryBuilders.matchQuery("event.outcome", "success"))
             .mustNot(
                 QueryBuilders.boolQuery()
-                .must(QueryBuilders.matchQuery("source.ip", "***REMOVED***"))
+                .must(QueryBuilders.matchQuery("source.ip", "**REMOVED**"))
                 .must(
                     QueryBuilders.boolQuery()
                     .should(QueryBuilders.matchQuery("user.name", "qtsftp"))
@@ -23,7 +23,7 @@ class SuccessfulSSHLogin implements utils.IScriptAuditbeat {
     }
 
     String getAuthor() {
-        "Mohamed Aziz Knani <www.***REMOVED***.tn>"
+        "Mohamed Aziz Knani <www.aziz.tn>"
     }
 
     String getDescription() {

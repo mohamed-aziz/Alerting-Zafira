@@ -37,7 +37,7 @@ class InterestingCommands implements utils.IScriptAuditbeat {
     }
 
     String getAuthor() {
-        "Mohamed Aziz Knani <www.***REMOVED***.tn>"
+        "Mohamed Aziz Knani <www.aziz.tn>"
     }
 
     String getDescription() {
